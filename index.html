@@ -58,14 +58,14 @@
       arjs="debugUIEnabled: false; sourceType: webcam;"
     >
 
-      <!-- Marker 1 -->
+      <!-- Trigger 1 marker: Red Cube -->
       <a-marker type="pattern" url="trigger1.patt" id="marker1">
-        <a-box position="0 0.5 0" material="color: red;"></a-box>
+        <a-box depth="0.5" height="0.5" width="0.5" color="red" position="0 0.5 0"></a-box>
       </a-marker>
 
-      <!-- Marker 2 -->
+      <!-- Trigger 2 marker: Blue Sphere -->
       <a-marker type="pattern" url="trigger2.patt" id="marker2">
-        <a-box position="0 0.5 0" material="color: blue;"></a-box>
+        <a-sphere radius="0.3" color="blue" position="0 0.5 0"></a-sphere>
       </a-marker>
 
       <a-entity camera></a-entity>
@@ -76,11 +76,13 @@
       const scene = document.getElementById("scene");
       const hintText = document.getElementById("hintText");
 
+      // Start AR when user interacts
       startButton.addEventListener("click", () => {
         startButton.style.display = "none";
         scene.style.visibility = "visible";
       });
 
+      // Marker detection
       const marker1 = document.querySelector("#marker1");
       const marker2 = document.querySelector("#marker2");
 
@@ -100,6 +102,5 @@
         hintText.textContent = "";
       });
     </script>
-
   </body>
 </html>
