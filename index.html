@@ -3,7 +3,8 @@
   <head>
     <title>AR Treasure Hunt</title>
     <script src="https://aframe.io/releases/1.4.2/aframe.min.js"></script>
-    <script src="https://rawcdn.githack.com/AR-js-org/AR.js/3.3.2/aframe/build/aframe-ar.min.js"></script>
+    <script src="https://rawcdn.githack.com/AR-js-org/AR.js/master/aframe/build/aframe-ar-nft.min.js"></script>
+    
     <style>
       body { margin: 0; overflow: hidden; }
       #startButton {
@@ -18,7 +19,7 @@
         border: none;
         border-radius: 12px;
         cursor: pointer;
-        z-index: 1;
+        z-index: 2;
       }
       #hintText {
         position: absolute;
@@ -33,11 +34,17 @@
       }
     </style>
   </head>
+
   <body>
     <button id="startButton">Start AR</button>
     <div id="hintText"></div>
 
-    <a-scene embedded arjs='trackingMethod: best; sourceType: webcam;' vr-mode-ui="enabled: false" renderer="logarithmicDepthBuffer: true;">
+    <a-scene
+      vr-mode-ui="enabled: false"
+      embedded
+      arjs="trackingMethod: best; sourceType: webcam; debugUIEnabled: false;"
+      renderer="logarithmicDepthBuffer: true;"
+    >
       <!-- Trigger 1 marker -->
       <a-marker type="pattern" url="trigger1.patt" id="marker1">
         <a-box position="0 0.5 0" material="color: red;" visible="false"></a-box>
@@ -52,31 +59,32 @@
     </a-scene>
 
     <script>
-      const startButton = document.getElementById('startButton');
-      const hintText = document.getElementById('hintText');
+      const startButton = document.getElementById("startButton");
+      const scene = document.querySelector("a-scene");
+      const hintText = document.getElementById("hintText");
 
-      startButton.addEventListener('click', () => {
-        startButton.style.display = 'none';
-        document.querySelector('a-scene').enterVR();
+      startButton.addEventListener("click", () => {
+        startButton.style.display = "none";
+        scene.style.visibility = "visible";
       });
 
-      // Show hint when markers are detected
-      const marker1 = document.querySelector('#marker1');
-      const marker2 = document.querySelector('#marker2');
+      // Marker logic
+      const marker1 = document.querySelector("#marker1");
+      const marker2 = document.querySelector("#marker2");
 
-      marker1.addEventListener('markerFound', () => {
+      marker1.addEventListener("markerFound", () => {
         hintText.textContent = "Lounge • Minx • Plate";
       });
 
-      marker2.addEventListener('markerFound', () => {
+      marker2.addEventListener("markerFound", () => {
         hintText.textContent = "Well Done!";
       });
 
-      marker1.addEventListener('markerLost', () => {
+      marker1.addEventListener("markerLost", () => {
         hintText.textContent = "";
       });
 
-      marker2.addEventListener('markerLost', () => {
+      marker2.addEventListener("markerLost", () => {
         hintText.textContent = "";
       });
     </script>
