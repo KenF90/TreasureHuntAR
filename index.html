@@ -4,10 +4,10 @@
   <title>AR Treasure Hunt</title>
 
   <!-- A-Frame -->
-  <script src="https://aframe.io/releases/1.4.2/aframe.min.js"></script>
+  <script src="https://aframe.io/releases/1.2.0/aframe.min.js"></script>
 
-  <!-- AR.js marker-based build -->
-  <script src="https://rawcdn.githack.com/AR-js-org/AR.js/3.3.2/aframe/build/aframe-ar.min.js"></script>
+  <!-- Stable AR.js build (best compatibility for Android + Chrome) -->
+  <script src="https://rawcdn.githack.com/AR-js-org/AR.js/2.2.1/aframe/build/aframe-ar.min.js"></script>
 
   <style>
     body { margin: 0; overflow: hidden; }
@@ -49,17 +49,16 @@
 <a-scene
   id="scene"
   style="visibility: hidden;"
-  vr-mode-ui="enabled: false"
   embedded
-  renderer="precision: mediump; antialias: true;"
-  arjs="debugUIEnabled: false;"
+  arjs="sourceType: webcam; debugUIEnabled: false;"
 >
-  <!-- Trigger 1 -->
+
+  <!-- Marker 1 -->
   <a-marker type="pattern" url="trigger1.patt" id="marker1">
     <a-box depth="0.5" height="0.5" width="0.5" color="red" position="0 0.5 0"></a-box>
   </a-marker>
 
-  <!-- Trigger 2 -->
+  <!-- Marker 2 -->
   <a-marker type="pattern" url="trigger2.patt" id="marker2">
     <a-sphere radius="0.3" color="blue" position="0 0.5 0"></a-sphere>
   </a-marker>
@@ -72,24 +71,9 @@
   const scene = document.getElementById("scene");
   const hintText = document.getElementById("hintText");
 
-  async function requestPermissions() {
-    try {
-      await navigator.mediaDevices.getUserMedia({ video: true });
-      return true;
-    } catch (e) {
-      alert("Camera permission is required for the AR activity.");
-      return false;
-    }
-  }
-
-  startButton.addEventListener("click", async () => {
+  startButton.addEventListener("click", () => {
     startButton.style.display = "none";
-
-    const granted = await requestPermissions();
-    if (granted) {
-      scene.style.visibility = "visible";
-      scene.setAttribute("arjs", "sourceType: webcam;");
-    }
+    scene.style.visibility = "visible";
   });
 
   const marker1 = document.querySelector("#marker1");
