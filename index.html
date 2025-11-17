@@ -1,102 +1,116 @@
 <!DOCTYPE html>
 <html>
-  <head>
-    <title>AR Treasure Hunt</title>
+<head>
+  <title>AR Treasure Hunt</title>
 
-    <!-- A-Frame -->
-    <script src="https://aframe.io/releases/1.4.2/aframe.min.js"></script>
+  <!-- A-Frame -->
+  <script src="https://aframe.io/releases/1.4.2/aframe.min.js"></script>
 
-    <!-- Correct AR.js marker-based build -->
-    <script src="https://rawcdn.githack.com/AR-js-org/AR.js/3.3.2/aframe/build/aframe-ar.min.js"></script>
+  <!-- AR.js marker-based build -->
+  <script src="https://rawcdn.githack.com/AR-js-org/AR.js/3.3.2/aframe/build/aframe-ar.min.js"></script>
 
-    <style>
-      body { margin: 0; overflow: hidden; }
+  <style>
+    body { margin: 0; overflow: hidden; }
 
-      #startButton {
-        position: absolute;
-        top: 50%;
-        left: 50%;
-        transform: translate(-50%, -50%);
-        z-index: 10;
-        padding: 20px 40px;
-        background: green;
-        border-radius: 12px;
-        border: none;
-        font-size: 22px;
-        color: white;
-        cursor: pointer;
-      }
+    #startButton {
+      position: absolute;
+      top: 50%;
+      left: 50%;
+      transform: translate(-50%, -50%);
+      z-index: 10;
+      padding: 20px 40px;
+      background: green;
+      border-radius: 12px;
+      border: none;
+      font-size: 22px;
+      color: white;
+      cursor: pointer;
+    }
 
-      #hintText {
-        position: absolute;
-        bottom: 20px;
-        width: 100%;
-        text-align: center;
-        font-size: 24px;
-        color: yellow;
-        font-weight: bold;
-        text-shadow: 2px 2px 4px black;
-        z-index: 9;
-      }
-    </style>
-  </head>
+    #hintText {
+      position: absolute;
+      bottom: 20px;
+      width: 100%;
+      text-align: center;
+      font-size: 24px;
+      color: yellow;
+      font-weight: bold;
+      text-shadow: 2px 2px 4px black;
+      z-index: 9;
+    }
+  </style>
+</head>
 
-  <body>
+<body>
 
-    <button id="startButton">Start AR</button>
-    <div id="hintText"></div>
+<button id="startButton">Start AR</button>
+<div id="hintText"></div>
 
-    <a-scene
-      id="scene"
-      style="visibility: hidden;"
-      vr-mode-ui="enabled: false"
-      embedded
-      device-orientation-permission-ui="enabled: true"
-      renderer="antialias: true; logarithmicDepthBuffer: true;"
-      arjs="debugUIEnabled: false; sourceType: webcam;"
-    >
+<a-scene
+  id="scene"
+  style="visibility: hidden;"
+  vr-mode-ui="enabled: false"
+  embedded
+  renderer="precision: mediump; antialias: true;"
+  arjs="debugUIEnabled: false;"
+>
+  <!-- Trigger 1 -->
+  <a-marker type="pattern" url="trigger1.patt" id="marker1">
+    <a-box depth="0.5" height="0.5" width="0.5" color="red" position="0 0.5 0"></a-box>
+  </a-marker>
 
-      <a-marker type="pattern" url="trigger1.patt" id="marker1">
-        <a-box depth="0.5" height="0.5" width="0.5" color="red" position="0 0.5 0"></a-box>
-      </a-marker>
+  <!-- Trigger 2 -->
+  <a-marker type="pattern" url="trigger2.patt" id="marker2">
+    <a-sphere radius="0.3" color="blue" position="0 0.5 0"></a-sphere>
+  </a-marker>
 
-      <a-marker type="pattern" url="trigger2.patt" id="marker2">
-        <a-sphere radius="0.3" color="blue" position="0 0.5 0"></a-sphere>
-      </a-marker>
+  <a-entity camera></a-entity>
+</a-scene>
 
-      <a-entity camera></a-entity>
+<script>
+  const startButton = document.getElementById("startButton");
+  const scene = document.getElementById("scene");
+  const hintText = document.getElementById("hintText");
 
-    </a-scene>
+  async function requestPermissions() {
+    try {
+      await navigator.mediaDevices.getUserMedia({ video: true });
+      return true;
+    } catch (e) {
+      alert("Camera permission is required for the AR activity.");
+      return false;
+    }
+  }
 
-    <script>
-      const startButton = document.getElementById("startButton");
-      const scene = document.getElementById("scene");
-      const hintText = document.getElementById("hintText");
+  startButton.addEventListener("click", async () => {
+    startButton.style.display = "none";
 
-      startButton.addEventListener("click", () => {
-        startButton.style.display = "none";
-        scene.style.visibility = "visible";
-      });
+    const granted = await requestPermissions();
+    if (granted) {
+      scene.style.visibility = "visible";
+      scene.setAttribute("arjs", "sourceType: webcam;");
+    }
+  });
 
-      const marker1 = document.querySelector("#marker1");
-      const marker2 = document.querySelector("#marker2");
+  const marker1 = document.querySelector("#marker1");
+  const marker2 = document.querySelector("#marker2");
 
-      marker1.addEventListener("markerFound", () => {
-        hintText.textContent = "Lounge • Minx • Plate";
-      });
+  marker1.addEventListener("markerFound", () => {
+    hintText.textContent = "Lounge • Minx • Plate";
+  });
 
-      marker2.addEventListener("markerFound", () => {
-        hintText.textContent = "Well Done!";
-      });
+  marker2.addEventListener("markerFound", () => {
+    hintText.textContent = "Well Done!";
+  });
 
-      marker1.addEventListener("markerLost", () => {
-        hintText.textContent = "";
-      });
+  marker1.addEventListener("markerLost", () => {
+    hintText.textContent = "";
+  });
 
-      marker2.addEventListener("markerLost", () => {
-        hintText.textContent = "";
-      });
-    </script>
+  marker2.addEventListener("markerLost", () => {
+    hintText.textContent = "";
+  });
+</script>
 
-  </body>
+</body>
 </html>
