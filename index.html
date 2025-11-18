@@ -1,100 +1,147 @@
 <!DOCTYPE html>
 <html>
-<head>
-  <title>AR Treasure Hunt</title>
+  <head>
+    <title>AR Treasure Hunt – MindAR Version</title>
 
-  <!-- A-Frame -->
-  <script src="https://aframe.io/releases/1.2.0/aframe.min.js"></script>
+    <!-- A-Frame -->
+    <script src="https://aframe.io/releases/1.4.0/aframe.min.js"></script>
 
-  <!-- Stable AR.js build (best compatibility for Android + Chrome) -->
-  <script src="https://rawcdn.githack.com/AR-js-org/AR.js/2.2.1/aframe/build/aframe-ar.min.js"></script>
+    <!-- MindAR image tracking (A-Frame integration) -->
+    <script src="https://cdn.jsdelivr.net/npm/mind-ar@1.1.7/dist/mindar-image-aframe.prod.js"></script>
 
-  <style>
-    body { margin: 0; overflow: hidden; }
+    <style>
+      body { margin: 0; overflow: hidden; }
 
-    #startButton {
-      position: absolute;
-      top: 50%;
-      left: 50%;
-      transform: translate(-50%, -50%);
-      z-index: 10;
-      padding: 20px 40px;
-      background: green;
-      border-radius: 12px;
-      border: none;
-      font-size: 22px;
-      color: white;
-      cursor: pointer;
-    }
+      #startButton {
+        position: absolute;
+        top: 50%;
+        left: 50%;
+        transform: translate(-50%, -50%);
+        z-index: 10;
+        padding: 20px 40px;
+        background: green;
+        border-radius: 12px;
+        border: none;
+        font-size: 22px;
+        color: white;
+        cursor: pointer;
+      }
 
-    #hintText {
-      position: absolute;
-      bottom: 20px;
-      width: 100%;
-      text-align: center;
-      font-size: 24px;
-      color: yellow;
-      font-weight: bold;
-      text-shadow: 2px 2px 4px black;
-      z-index: 9;
-    }
-  </style>
-</head>
+      #hintText {
+        position: absolute;
+        bottom: 20px;
+        width: 100%;
+        text-align: center;
+        font-size: 24px;
+        color: yellow;
+        font-weight: bold;
+        text-shadow: 2px 2px 4px black;
+        z-index: 9;
+      }
+    </style>
+  </head>
 
-<body>
+  <body>
+    <button id="startButton">Start AR</button>
+    <div id="hintText"></div>
 
-<button id="startButton">Start AR</button>
-<div id="hintText"></div>
+    <a-scene
+      id="scene"
+      mindar-image="imageTargetSrc: ./targets.mind;"
+      color-space="sRGB"
+      renderer="colorManagement: true, physicallyCorrectLights: true;"
+      vr-mode-ui="enabled: false"
+      device-orientation-permission-ui="enabled: true"
+      embedded
+    >
+      <a-assets>
+        <!-- Processed images used in AR -->
+        <img id="artImage" src="art_target.jpg" />
+      </a-assets>
 
-<a-scene
-  id="scene"
-  style="visibility: hidden;"
-  embedded
-  arjs="sourceType: webcam; debugUIEnabled: false;"
->
+      <!-- Camera -->
+      <a-camera position="0 0 0" look-controls="enabled: false"></a-camera>
 
-  <!-- Marker 1 -->
-  <a-marker type="pattern" url="trigger1.patt" id="marker1">
-    <a-box depth="0.5" height="0.5" width="0.5" color="red" position="0 0.5 0"></a-box>
-  </a-marker>
+      <!-- Target 0: Plate (trigger1) -->
+      <!-- Shows artwork image + rising animation + clue text -->
+      <a-entity id="plateAnchor" mindar-image-target="targetIndex: 0">
+        <!-- Artwork starts pinned to plate and rises up (Option 5) -->
+        <a-plane
+          id="artPlane"
+          src="#artImage"
+          position="0 0 0"
+          height="1.0"
+          width="0.7"
+          transparent="false"
+          animation__rise="property: position; to: 0 0.6 0; dur: 900; easing: easeOutQuad; startEvents: targetFound"
+        ></a-plane>
 
-  <!-- Marker 2 -->
-  <a-marker type="pattern" url="trigger2.patt" id="marker2">
-    <a-sphere radius="0.3" color="blue" position="0 0.5 0"></a-sphere>
-  </a-marker>
+        <!-- Clue text floats with the image -->
+        <a-text
+          id="clueText"
+          value="St Ives • Warm • Sunny"
+          align="center"
+          position="0 -0.6 0"
+          width="2.5"
+          color="yellow"
+          outlineColor="#000000"
+          outlineWidth="0.03"
+          animation__lift="property: position; to: 0 -0.2 0; dur: 900; easing: easeOutQuad; startEvents: targetFound"
+        ></a-text>
+      </a-entity>
 
-  <a-entity camera></a-entity>
-</a-scene>
+      <!-- Target 1: Framed artwork (trigger2) -->
+      <!-- Final 'Well done!' message only -->
+      <a-entity id="artAnchor" mindar-image-target="targetIndex: 1">
+        <a-text
+          value="Well done!"
+          align="center"
+          position="0 0 0"
+          width="2"
+          color="lime"
+          outlineColor="#000000"
+          outlineWidth="0.03"
+        ></a-text>
+      </a-entity>
+    </a-scene>
 
-<script>
-  const startButton = document.getElementById("startButton");
-  const scene = document.getElementById("scene");
-  const hintText = document.getElementById("hintText");
+    <script>
+      const startButton = document.getElementById("startButton");
+      const scene = document.getElementById("scene");
+      const hintText = document.getElementById("hintText");
 
-  startButton.addEventListener("click", () => {
-    startButton.style.display = "none";
-    scene.style.visibility = "visible";
-  });
+      // Start AR only after user interaction (required by browsers)
+      startButton.addEventListener("click", async () => {
+        startButton.style.display = "none";
 
-  const marker1 = document.querySelector("#marker1");
-  const marker2 = document.querySelector("#marker2");
+        // Ask explicitly for camera permission
+        try {
+          await navigator.mediaDevices.getUserMedia({ video: true });
+        } catch (e) {
+          alert("Camera permission is required for the AR treasure hunt.");
+          return;
+        }
 
-  marker1.addEventListener("markerFound", () => {
-    hintText.textContent = "Lounge • Minx • Plate";
-  });
+        scene.components["mindar-image"].start();
+      });
 
-  marker2.addEventListener("markerFound", () => {
-    hintText.textContent = "Well Done!";
-  });
+      // Optional: on-screen hints when targets are found
+      const plateAnchor = document.getElementById("plateAnchor");
+      const artAnchor = document.getElementById("artAnchor");
 
-  marker1.addEventListener("markerLost", () => {
-    hintText.textContent = "";
-  });
+      plateAnchor.addEventListener("targetFound", () => {
+        hintText.textContent = "Clue found!";
+      });
+      plateAnchor.addEventListener("targetLost", () => {
+        hintText.textContent = "";
+      });
 
-  marker2.addEventListener("markerLost", () => {
-    hintText.textContent = "";
-  });
-</script>
-
-</body>
+      artAnchor.addEventListener("targetFound", () => {
+        hintText.textContent = "Treasure complete!";
+      });
+      artAnchor.addEventListener("targetLost", () => {
+        hintText.textContent = "";
+      });
+    </script>
+  </body>
 </html>
